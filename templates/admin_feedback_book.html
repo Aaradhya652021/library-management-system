@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Feedback · {{ book.title }}{% endblock %}
+{% block content %}
+<h1>{{ book.title }}</h1>
+<p class="muted">by {{ book.author }} · {{ summary.count }} rating(s)
+  {% if summary.avg is not none %}· average {{ summary.avg }} ★{% endif %}</p>
+<p><a class="btn ghost small" href="{{ url_for('recs.admin_feedback') }}">← Back to feedback</a></p>
+
+{% for bucket in buckets %}
+<section class="rec-section">
+  <h2 class="sentiment-{{ bucket.sentiment }}">{{ bucket.label }} ({{ bucket.count }})</h2>
+
+  {% if bucket.consensus %}
+  <div class="consensus {% if bucket.strong %}strong{% endif %}">
+    <h3>
+      Consensus: {{ bucket.count }} members rated this {{ bucket.label }}
+      {% if bucket.strong %}<span class="badge late">strong</span>{% endif %}
+    </h3>
+    <p class="muted">Create a reading-group segment from these members. Untick anyone who should not be included.</p>
+    <form method="post" action="{{ url_for('recs.create_feedback_segment', book_id=book.book_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="sentiment" value="{{ bucket.sentiment }}">
+      <label for="seg-name-{{ bucket.sentiment }}">Segment name</label>
+      <input id="seg-name-{{ bucket.sentiment }}" name="name" value="{{ bucket.suggested_name }}" maxlength="140" required>
+      <label for="seg-desc-{{ bucket.sentiment }}">Description (optional)</label>
+      <input id="seg-desc-{{ bucket.sentiment }}" name="description" maxlength="500"
+             value="Members who rated {{ book.title }} {{ bucket.label }}.">
+      <div class="checkbox-list">
+        {% for entry in bucket.entries %}
+        <label>
+          <input type="checkbox" name="user_ids" value="{{ entry.user_id }}" checked>
+          {{ entry.name }} ({{ entry.rating }} ★)
+        </label>
+        {% endfor %}
+      </div>
+      <button type="submit">Create segment from {{ bucket.count }} member(s)</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if bucket.entries %}
+  <table>
+    <tr><th>Member</th><th>Rating</th><th>Comment</th><th>Last updated</th></tr>
+    {% for entry in bucket.entries %}
+    <tr>
+      <td><a href="{{ url_for('recs.admin_user', user_id=entry.user_id) }}">{{ entry.name }}</a></td>
+      <td>{{ entry.rating }} ★</td>
+      <td>{{ entry.comment or '—' }}</td>
+      <td>{{ entry.updated_at }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No ratings in this bucket.</p>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

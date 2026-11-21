@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Segments{% endblock %}
+{% block content %}
+<h1>Reader segments</h1>
+
+<section class="rec-section">
+  <h2>ML segments</h2>
+  <p class="muted">The ten KMeans clusters from the recommendation model. Membership is refreshed automatically when a member rates a book.</p>
+  <form method="post" action="{{ url_for('recs.admin_segments_recompute') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit">Recompute ML segments for all members</button>
+  </form>
+  <table class="seg-table">
+    <tr><th>Cluster</th><th>Name</th><th>Members</th><th>Top genres</th><th></th></tr>
+    {% for segment in ml_segments %}
+    <tr>
+      <td>{{ segment.ml_cluster }}</td>
+      <td>{{ segment.name }}</td>
+      <td>{{ segment.member_count }}</td>
+      <td class="muted">{{ segment.top_genres or '—' }}</td>
+      <td><a class="btn ghost small" href="{{ url_for('recs.admin_segment_detail', segment_id=segment.segment_id) }}">Open</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">No ML segments yet. Run <code>python scripts/seed_segments.py</code>.</td></tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section class="rec-section">
+  <h2>Admin segments from feedback</h2>
+  <table class="seg-table">
+    <tr><th>Name</th><th>Source book</th><th>Sentiment</th><th>Members</th><th></th></tr>
+    {% for segment in feedback_segments %}
+    <tr>
+      <td>{{ segment.name }}</td>
+      <td>
+        {% if segment.source_book_id %}
+        <a href="{{ url_for('recs.admin_feedback_book', book_id=segment.source_book_id) }}">{{ segment.source_title }}</a>
+        {% else %}—{% endif %}
+      </td>
+      <td class="sentiment-{{ segment.sentiment }}">{{ segment.sentiment or '—' }}</td>
+      <td>{{ segment.member_count }}</td>
+      <td><a class="btn ghost small" href="{{ url_for('recs.admin_segment_detail', segment_id=segment.segment_id) }}">Open</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">No feedback segments yet. Create one from a book's consensus panel.</td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% endblock %}

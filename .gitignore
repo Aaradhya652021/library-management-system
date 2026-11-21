@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+backup_before_ml.sql
+scripts/seed_demo_manifest.json
+public_url.txt
+tools/cloudflared.exe
+*.log

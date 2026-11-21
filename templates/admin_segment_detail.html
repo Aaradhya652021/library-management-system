@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}{{ segment.name }}{% endblock %}
+{% block content %}
+<h1>{{ segment.name }}
+  <span class="badge {{ 'ml' if segment.kind == 'ml' else 'feedback' }}">{{ segment.kind }}</span>
+</h1>
+<p class="muted">
+  {% if segment.kind == 'ml' %}KMeans cluster {{ segment.ml_cluster }}
+  {% elif source_title %}From feedback on <a href="{{ url_for('recs.admin_feedback_book', book_id=segment.source_book_id) }}">{{ source_title }}</a>
+  {% endif %}
+  {% if segment.sentiment %}· sentiment: <span class="sentiment-{{ segment.sentiment }}">{{ segment.sentiment }}</span>{% endif %}
+</p>
+{% if segment.top_genres %}<p><strong>Top genres:</strong> {{ segment.top_genres }}</p>{% endif %}
+<p><a class="btn ghost small" href="{{ url_for('recs.admin_segments') }}">← All segments</a></p>
+
+<section class="rec-section">
+  <h2>Members ({{ members|length }})</h2>
+  {% if members %}
+  <table>
+    <tr><th>Member</th><th>Email</th><th>Assigned by</th><th></th></tr>
+    {% for member in members %}
+    <tr>
+      <td><a href="{{ url_for('recs.admin_user', user_id=member.user_id) }}">{{ member.name }}</a></td>
+      <td>{{ member.email }}</td>
+      <td>{{ member.assigned_by }}</td>
+      <td>
+        {% if segment.kind == 'feedback' %}
+        <form class="inline" method="post"
+              action="{{ url_for('recs.admin_segment_member_remove', segment_id=segment.segment_id, user_id=member.user_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn danger small">Remove</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No members in this segment yet.</p>
+  {% endif %}
+</section>
+
+<section class="rec-section">
+  <h2>Recommend books to this segment</h2>
+  <p class="muted">Candidates are split into books we already own and books worth acquiring.</p>
+  <form method="post" action="{{ url_for('recs.admin_segment_recommend', segment_id=segment.segment_id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {% if candidate_in_library %}
+    <div class="tier-label">In our library</div>
+    <div class="rec-grid">
+      {% for item in candidate_in_library %}
+      <div class="rec-card">
+        <label style="display:flex; gap:8px; align-items:flex-start; margin:0;">
+          <input type="checkbox" name="ml_idx" value="{{ item.ml_idx }}" style="width:auto; margin-top:4px;">
+          <span>
+            <span class="rec-title">{{ item.title }}</span><br>
+            <span class="rec-author">{{ item.author }}</span><br>
+            <span class="rec-meta">{{ item.category }} · {{ item.match_pct }}% match</span><br>
+            <span class="badge {{ 'ok' if item.library.available_copies > 0 else 'out' }}">{{ item.available_text }}</span>
+          </span>
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if candidate_suggested %}
+    <div class="tier-label">Suggested, not in library</div>
+    <div class="rec-grid">
+      {% for item in candidate_suggested %}
+      <div class="rec-card suggested">
+        <label style="display:flex; gap:8px; align-items:flex-start; margin:0;">
+          <input type="checkbox" name="ml_idx" value="{{ item.ml_idx }}" style="width:auto; margin-top:4px;">
+          <span>
+            <span class="rec-title">{{ item.title }}</span><br>
+            <span class="rec-author">{{ item.author }}</span><br>
+            <span class="rec-meta">{{ item.category }} · {{ item.match_pct }}% match</span>
+          </span>
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not candidate_in_library and not candidate_suggested %}
+    <p class="muted">No candidates generated for this segment.</p>
+    {% endif %}
+
+    <label for="note">Optional note shown to members</label>
+    <input id="note" name="note" maxlength="255" placeholder="e.g. Our book-club pick for November">
+    <p><button type="submit">Recommend selected books</button></p>
+  </form>
+</section>
+
+<section class="rec-section">
+  <h2>Current picks ({{ picks|length }})</h2>
+  {% if picks %}
+    {% for pick in picks %}
+    <div class="segment-pick">
+      <strong>{{ pick.display_title }}</strong>
+      {% if pick.display_author %}<span class="muted">by {{ pick.display_author }}</span>{% endif %}
+      <span class="badge {{ 'ok' if pick.in_library else '' }}">{{ 'In library' if pick.in_library else 'Not in library' }}</span>
+      {% if pick.in_library and pick.available_copies is not none %}
+      <span class="badge {{ 'ok' if pick.available_copies > 0 else 'out' }}">{{ pick.available_copies }} of {{ pick.total_copies }} available</span>
+      {% endif %}
+      {% if pick.note %}<div class="note">“{{ pick.note }}”</div>{% endif %}
+      <form class="inline" method="post"
+            action="{{ url_for('recs.admin_segment_pick_remove', segment_id=segment.segment_id, pick_id=pick.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn danger small">Remove</button>
+      </form>
+    </div>
+    {% endfor %}
+  {% else %}
+  <p class="muted">No books recommended to this segment yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit book' if mode == 'edit' else 'Add book' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit book' if mode == 'edit' else 'Add book' }}</h1>
+<div class="card" style="max-width: 460px;">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="title">Title</label>
+    <input id="title" name="title" value="{{ book.get('title', '') }}" required>
+    <label for="author">Author</label>
+    <input id="author" name="author" value="{{ book.get('author', '') }}" required>
+    <label for="isbn">ISBN</label>
+    <input id="isbn" name="isbn" value="{{ book.get('isbn') or '' }}">
+    <label for="genre">Genre</label>
+    <input id="genre" name="genre" value="{{ book.get('genre') or '' }}">
+    <label for="total_copies">Total copies</label>
+    <input id="total_copies" name="total_copies" type="number" min="0"
+           value="{{ book.get('total_copies', 1) }}">
+    <label for="ml_idx">ML catalog index</label>
+    <input id="ml_idx" name="ml_idx" type="number" min="0"
+           value="{{ book.get('ml_idx') if book.get('ml_idx') is not none else '' }}"
+           placeholder="Leave blank to auto-match by ISBN/title">
+    <p class="muted">Auto-matched from the 9,697-title catalog when left blank.</p>
+    <p>
+      <button type="submit">Save</button>
+      <a class="btn ghost" href="{{ url_for('books') }}">Cancel</a>
+    </p>
+  </form>
+</div>
+{% endblock %}

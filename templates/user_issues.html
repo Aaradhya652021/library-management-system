@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "_rating_widget.html" import star_widget %}
+{% block title %}My Issues{% endblock %}
+{% block content %}
+<h1>My Issued Books</h1>
+
+{% if issues %}
+<table>
+  <tr><th>Book</th><th>Issued</th><th>Due</th><th>Status</th><th>Rating</th></tr>
+  {% for item in issues %}
+  <tr>
+    <td>{{ item.title }}</td>
+    <td>{{ item.issue_date }}</td>
+    <td>{{ item.due_date }}</td>
+    <td>
+      {% if not item.return_date %}
+        <span class="tag out">Issued</span>
+      {% else %}
+        <span class="tag ok">Returned</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if item.return_date %}
+        {% set stats = rating_stats.get(item.book_id) %}
+        <div class="rating-summary">
+          {% if stats %}{{ stats.avg_rating }} ({{ stats.count }}){% else %}Not rated yet{% endif %}
+        </div>
+        {{ star_widget(item.book_id, my_ratings.get(item.book_id), 'issues-' ~ item.issue_id, url_for('issues')) }}
+      {% else %}
+        <span class="muted">Rate after returning</span>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No books currently issued to you.</p>
+{% endif %}
+
+<p><form class="inline" method="post" action="{{ url_for('user_logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn ghost small">Logout</button>
+</form></p>
+
+{% if issues %}
+<h3>Return a Book</h3>
+<table>
+  <tr><th>Book</th><th>Return</th></tr>
+  {% for item in issues %}
+  <tr>
+    <td>{{ item.title }}</td>
+    <td>
+      {% if not item.return_date %}
+      <form class="inline" method="post" action="{{ url_for('issue_return', issue_id=item.issue_id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn small danger">Return</button>
+      </form>
+      {% else %}
+        <span class="tag ok">Returned</span>
+      {% endif %}
+      </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No books currently issued to you.</p>
+{% endif %}
+{% endblock %}

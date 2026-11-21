@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stats">
+  <div class="stat"><b>{{ stats.books }}</b><span>Titles</span></div>
+  <div class="stat"><b>{{ stats.copies }}</b><span>Total copies</span></div>
+  <div class="stat"><b>{{ stats.available }}</b><span>Available copies</span></div>
+  <div class="stat"><b>{{ stats.members }}</b><span>Members</span></div>
+  <div class="stat"><b>{{ stats.issued }}</b><span>Books issued</span></div>
+  <div class="stat"><b>{{ stats.overdue }}</b><span>Overdue</span></div>
+</div>
+
+<section class="rec-section">
+  <h2>Library-wide recommendations</h2>
+  {% if admin_recommendations_in_library or admin_recommendations_consider %}
+    {% if admin_recommendations_in_library %}
+    <div class="tier-label">Top picks already in our library</div>
+    <div class="rec-grid">
+      {% for item in admin_recommendations_in_library[:8] %}
+      <div class="rec-card">
+        <div class="rec-title">{{ item.title }}</div>
+        <div class="rec-author">{{ item.author }}</div>
+        <div class="rec-meta">
+          <span>{{ item.category }}</span>
+          <span class="match-pill">{{ item.match_pct }}% match</span>
+        </div>
+        <div class="rec-reason">{{ item.reason }}</div>
+        <span class="badge {{ 'ok' if item.library.available_copies > 0 else 'out' }}">{{ item.available_text }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if admin_recommendations_consider %}
+    <div class="tier-label">Consider acquiring</div>
+    <div class="rec-grid">
+      {% for item in admin_recommendations_consider[:8] %}
+      <div class="rec-card suggested">
+        <div class="rec-title">{{ item.title }}</div>
+        <div class="rec-author">{{ item.author }}</div>
+        <div class="rec-meta">
+          <span>{{ item.category }}</span>
+          {% if item.year %}<span>{{ item.year }}</span>{% endif %}
+          <span>★ {{ '%.2f'|format(item.avg_rating) if item.avg_rating else '—' }}</span>
+          <span class="match-pill">{{ item.match_pct }}% match</span>
+        </div>
+        <div class="rec-reason">{{ item.reason }}</div>
+        <a class="btn small" href="{{ url_for('book_add', title=item.title, author=item.author, genre=item.category, isbn=item.isbn or '', ml_idx=item.ml_idx) }}">Add to library</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% else %}
+    <p class="muted">No recommendations yet. Add a few books and rate them, or run the matching script.</p>
+  {% endif %}
+</section>
+
+<div class="two-col">
+  <section class="rec-section">
+    <h2>Feedback snapshot</h2>
+    <div class="progress-grid">
+      <div class="progress-stat"><b>{{ feedback_total.count }}</b><span>Total ratings</span></div>
+      <div class="progress-stat"><b>{{ feedback_total.avg if feedback_total.avg is not none else '—' }}</b><span>Average rating</span></div>
+    </div>
+    {% if recent_ratings %}
+    <table>
+      <tr><th>Book</th><th>Member</th><th>Rating</th><th>When</th></tr>
+      {% for row in recent_ratings %}
+      <tr>
+        <td><a href="{{ url_for('recs.admin_feedback_book', book_id=row.book_id) }}">{{ row.title }}</a></td>
+        <td>{{ row.name }}</td>
+        <td>{{ row.rating }} ★</td>
+        <td>{{ row.updated_at }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No ratings yet.</p>
+    {% endif %}
+    <p><a class="btn ghost small" href="{{ url_for('recs.admin_feedback') }}">Open feedback page</a></p>
+  </section>
+
+  <section class="rec-section">
+    <h2>Segments snapshot</h2>
+    {% if segment_counts %}
+    <table class="seg-table">
+      <tr><th>Segment</th><th>Type</th><th>Members</th></tr>
+      {% for row in segment_counts %}
+      <tr>
+        <td><a href="{{ url_for('recs.admin_segment_detail', segment_id=row.segment_id) }}">{{ row.name }}</a></td>
+        <td><span class="badge {{ 'ml' if row.kind == 'ml' else 'feedback' }}">{{ row.kind }}</span></td>
+        <td>{{ row.member_count }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No segments yet. Run <code>python scripts/seed_segments.py</code>.</p>
+    {% endif %}
+    <p><a class="btn ghost small" href="{{ url_for('recs.admin_segments') }}">Manage segments</a></p>
+  </section>
+</div>
+
+<h2>Recent activity</h2>
+<table>
+  <tr>
+    <th>#</th><th>Book</th><th>Member</th><th>Issued</th><th>Due</th><th>Returned</th>
+  </tr>
+  {% for row in recent %}
+  <tr>
+    <td>{{ row.issue_id }}</td>
+    <td>{{ row.title }}</td>
+    <td>{{ row.member }}</td>
+    <td>{{ row.issue_date }}</td>
+    <td>{{ row.due_date }}</td>
+    <td>{{ row.return_date or '—' }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="muted">No issues yet.</td></tr>
+  {% endfor %}
+</table>
+<p><a class="btn" href="{{ url_for('issues') }}">Issue a book</a></p>
+{% endblock %}

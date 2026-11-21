@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Issues{% endblock %}
+{% block content %}
+<h1>Issue / return</h1>
+
+<div class="card">
+  <h2 style="font-size: 16px;">Issue a book</h2>
+  <form method="post" action="{{ url_for('issue_add') }}" style="display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label for="book_id">Book</label>
+      <select id="book_id" name="book_id" required style="min-width: 240px;">
+        <option value="">— pick a book —</option>
+        {% for book in books %}
+          <option value="{{ book.book_id }}">{{ book.title }} ({{ book.available_copies }} left)</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="user_id">Member</label>
+      <select id="user_id" name="user_id" required style="min-width: 200px;">
+        <option value="">— pick a member —</option>
+        {% for member in members %}
+          <option value="{{ member.user_id }}">{{ member.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="due_date">Due date</label>
+      <input id="due_date" name="due_date" type="date" value="{{ default_due }}" required>
+    </div>
+    <div><button type="submit">Issue</button></div>
+  </form>
+  {% if not books %}<p class="muted">No copies available. Add books first.</p>{% endif %}
+  {% if not members %}<p class="muted">No members yet. Add a member first.</p>{% endif %}
+</div>
+
+<h2>All issues</h2>
+<table>
+  <tr>
+    <th>#</th><th>Book</th><th>Member</th><th>Issued</th><th>Due</th>
+    <th>Returned</th><th>Fine</th><th>Status</th><th></th>
+  </tr>
+  {% for row in issues %}
+  <tr>
+    <td>{{ row.issue_id }}</td>
+    <td>{{ row.title }}</td>
+    <td>{{ row.member }}</td>
+    <td>{{ row.issue_date }}</td>
+    <td>{{ row.due_date }}</td>
+    <td>{{ row.return_date or '—' }}</td>
+    <td>{{ row.fine }}</td>
+    <td>
+      {% if row.return_date %}
+        <span class="tag ok">returned</span>
+      {% elif row.due_date.isoformat() < today %}
+        <span class="tag late">overdue</span>
+      {% else %}
+        <span class="tag out">issued</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if not row.return_date %}
+      <form class="inline" method="post" action="{{ url_for('issue_return', issue_id=row.issue_id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn small">Return</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="9" class="muted">No issues yet.</td></tr>
+  {% endfor %}
+</table>
+<p class="muted">Fine is {{ fine_per_day }} per day after the due date.</p>
+{% endblock %}

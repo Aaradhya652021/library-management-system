@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Feedback{% endblock %}
+{% block content %}
+<h1>Reader feedback</h1>
+
+<div class="progress-grid">
+  <div class="progress-stat"><b>{{ totals.total_ratings or 0 }}</b><span>Total ratings</span></div>
+  <div class="progress-stat"><b>{{ '%.2f'|format(totals.avg_rating) if totals.avg_rating is not none else '—' }}</b><span>Average rating</span></div>
+</div>
+
+<form method="get" class="filter-row card">
+  <div>
+    <label for="min_raters">Minimum raters</label>
+    <input id="min_raters" name="min_raters" type="number" min="0" value="{{ min_raters }}">
+  </div>
+  <div>
+    <label for="sort">Sort by</label>
+    <select id="sort" name="sort">
+      <option value="avg" {% if sort == 'avg' %}selected{% endif %}>Average rating</option>
+      <option value="count" {% if sort == 'count' %}selected{% endif %}>Number of raters</option>
+    </select>
+  </div>
+  <div><button type="submit">Apply filters</button></div>
+</form>
+
+<table>
+  <tr><th>Book</th><th>Raters</th><th>Average</th><th>Distribution (5 → 1)</th><th></th></tr>
+  {% for book in books %}
+  <tr>
+    <td>{{ book.title }}</td>
+    <td>{{ book.raters }}</td>
+    <td>{{ book.avg_rating }} ★</td>
+    <td>
+      <div class="dist" title="5★ {{ book.distribution[0].count }}, 4★ {{ book.distribution[1].count }}, 3★ {{ book.distribution[2].count }}, 2★ {{ book.distribution[3].count }}, 1★ {{ book.distribution[4].count }}">
+        {% for bar in book.distribution %}
+        <div class="dbar {% if bar.stars == 5 %}five{% endif %}" style="height: {{ bar.pct if bar.pct > 0 else 4 }}%"></div>
+        {% endfor %}
+      </div>
+    </td>
+    <td><a class="btn ghost small" href="{{ url_for('recs.admin_feedback_book', book_id=book.book_id) }}">Detail</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="muted">No books with feedback match these filters.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

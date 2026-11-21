@@ -1,0 +1,6 @@
+,precision,recall,ndcg
+Popularity (cold start),0.0005,0.0005,0.0006
+Content-based,0.0758,0.0885,0.0882
+Segment-based,0.0244,0.0252,0.0266
+Collaborative (SVD),0.0752,0.088,0.0847
+HYBRID,0.075,0.0877,0.0838

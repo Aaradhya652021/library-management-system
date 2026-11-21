@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Books{% endblock %}
+{% block content %}
+<h1>Books</h1>
+<p><a class="btn" href="{{ url_for('book_add') }}">+ Add book</a></p>
+
+<table>
+  <tr>
+    <th>ID</th><th>Title</th><th>Author</th><th>ISBN</th><th>Genre</th>
+    <th>Available</th><th>Rating</th><th>ML</th><th></th>
+  </tr>
+  {% for book in books %}
+  <tr>
+    <td>{{ book.book_id }}</td>
+    <td>{{ book.title }}</td>
+    <td>{{ book.author }}</td>
+    <td>{{ book.isbn or '—' }}</td>
+    <td>{{ book.genre or '—' }}</td>
+    <td>{{ book.available_copies }} / {{ book.total_copies }}</td>
+    <td>
+      {% set stats = rating_stats.get(book.book_id) %}
+      {% if stats %}{{ stats.avg_rating }} ({{ stats.count }}){% else %}—{% endif %}
+    </td>
+    <td>{{ book.ml_idx if book.ml_idx is not none else '—' }}</td>
+    <td>
+      <a class="btn ghost small" href="{{ url_for('book_edit', book_id=book.book_id) }}">Edit</a>
+      <form class="inline" method="post" action="{{ url_for('book_delete', book_id=book.book_id) }}"
+            onsubmit="return confirm('Delete this book?')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn danger small">Delete</button>
+      </form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="9" class="muted">No books yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

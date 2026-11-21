@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% from "_rating_widget.html" import star_widget %}
+{% block title %}My Reading{% endblock %}
+{% block content %}
+<h1>Welcome, {{ user.name }}</h1>
+
+{# 1 ─ Recommended for you ------------------------------------------------ #}
+<section class="rec-section">
+  <h2>Recommended for you</h2>
+  {% if recommended_in_library or recommended_suggested %}
+    {% if recommended_in_library %}
+    <div class="tier-label">In our library</div>
+    <div class="rec-grid">
+      {% for item in recommended_in_library[:12] %}
+      <div class="rec-card">
+        <div class="rec-title">{{ item.title }}</div>
+        <div class="rec-author">{{ item.author }}</div>
+        <div class="rec-meta">
+          <span>{{ item.category }}</span>
+          {% if item.year %}<span>{{ item.year }}</span>{% endif %}
+          <span>★ {{ '%.2f'|format(item.avg_rating) if item.avg_rating else '—' }}</span>
+          <span class="match-pill">{{ item.match_pct }}% match</span>
+        </div>
+        <div class="rec-reason">{{ item.reason }}</div>
+        <div class="rec-meta">
+          <span class="badge {{ 'ok' if item.library.available_copies > 0 else 'out' }}">{{ item.available_text }}</span>
+          {% if item.library_rating_count %}
+          <span class="rating-summary">{{ item.library_rating }} ({{ item.library_rating_count }})</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if recommended_suggested %}
+    <div class="tier-label">Suggested, not in library</div>
+    <div class="rec-grid">
+      {% for item in recommended_suggested[:12] %}
+      <div class="rec-card suggested">
+        <div class="rec-title">{{ item.title }}</div>
+        <div class="rec-author">{{ item.author }}</div>
+        <div class="rec-meta">
+          <span>{{ item.category }}</span>
+          {% if item.year %}<span>{{ item.year }}</span>{% endif %}
+          <span>★ {{ '%.2f'|format(item.avg_rating) if item.avg_rating else '—' }}</span>
+          <span class="match-pill">{{ item.match_pct }}% match</span>
+        </div>
+        <div class="rec-reason">{{ item.reason }}</div>
+        <span class="badge">Wishlist · not in library yet</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% else %}
+    <p class="muted">Recommendations will appear here after you rate a few books or once the catalog is linked.</p>
+  {% endif %}
+</section>
+
+{# 2 ─ Reading-group picks ------------------------------------------------ #}
+<section class="rec-section">
+  <h2>Picked for your reading group</h2>
+  {% if segment_picks %}
+    {% for pick in segment_picks %}
+    <div class="segment-pick">
+      <strong>{{ pick.display_title }}</strong>
+      {% if pick.display_author %} <span class="muted">by {{ pick.display_author }}</span>{% endif %}
+      <span class="badge {{ 'ml' if pick.kind == 'ml' else 'feedback' }}">{{ pick.segment_name }}</span>
+      <span class="badge {{ 'ok' if pick.in_library and pick.available_copies and pick.available_copies > 0 else 'out' }}">{{ pick.available_text }}</span>
+      {% if pick.note %}<div class="note">“{{ pick.note }}”</div>{% endif %}
+      <div class="from">from {{ 'your ML reading group' if pick.kind == 'ml' else 'an admin reading group' }}</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">No reading-group picks yet. Rate a few books and your librarian can recommend titles to your group.</p>
+  {% endif %}
+</section>
+
+{# 3 ─ Reading progress report -------------------------------------------- #}
+<section class="rec-section">
+  <h2>Reading progress report</h2>
+  <div class="progress-grid">
+    <div class="progress-stat"><b>{{ progress.borrowed }}</b><span>Books borrowed</span></div>
+    <div class="progress-stat"><b>{{ progress.returned }}</b><span>Books returned</span></div>
+    <div class="progress-stat"><b>{{ progress.reading }}</b><span>Currently reading</span></div>
+    <div class="progress-stat"><b>{{ progress.on_time_rate }}%</b><span>On-time return rate</span></div>
+    <div class="progress-stat"><b>{{ '%.2f'|format(progress.total_fines) }}</b><span>Total fines</span></div>
+    <div class="progress-stat"><b>{{ progress.avg_rating if progress.avg_rating is not none else '—' }}</b><span>Average rating given ({{ progress.rated_count }})</span></div>
+  </div>
+
+  <div class="level-row">
+    <span class="level-badge">{{ progress.level.name }}</span>
+    {% if progress.level.next_level %}
+      <span class="muted">{{ progress.level.books_to_next }} more returned book(s) to reach {{ progress.level.next_level }}</span>
+    {% else %}
+      <span class="muted">Top level reached — congratulations!</span>
+    {% endif %}
+  </div>
+  <div class="bar-track"><div class="bar-fill gold" style="width: {{ progress.level.progress_pct }}%"></div></div>
+
+  {% if progress.currently_reading %}
+  <h3>Currently reading</h3>
+  {% for item in progress.currently_reading %}
+  <div class="due-row">
+    <span>{{ item.title }}</span>
+    <span>
+      {% if item.overdue_days %}
+        <span class="badge late">Overdue by {{ item.overdue_days }} day(s)</span>
+      {% else %}
+        <span class="badge ok">{{ item.days_left }} day(s) left</span>
+      {% endif %}
+      <span class="muted">due {{ item.due_date }}</span>
+    </span>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <h3>Reading by month (last 6 months)</h3>
+  <div class="chart">
+    {% for month in progress.monthly %}
+    <div class="col" title="{{ month.label }}: {{ month.count }} returned">
+      <span class="col-value">{{ month.count }}</span>
+      <div class="bar" style="height: {{ (100 * month.count / progress.max_month)|int if progress.max_month else 2 }}%"></div>
+      <span class="col-label">{{ month.label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h3>Genre breakdown of books read</h3>
+  {% if progress.genres %}
+    {% for row in progress.genres %}
+    <div class="hbar-row">
+      <span class="hbar-label" title="{{ row.genre }}">{{ row.genre }}</span>
+      <div class="hbar-track"><div class="hbar-fill" style="width: {{ row.pct }}%"></div></div>
+      <span class="hbar-count">{{ row.count }}</span>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">No returned books yet.</p>
+  {% endif %}
+
+  {% if progress.unrated %}
+  <h3>Read but not yet rated</h3>
+  <ul class="unrated-list">
+    {% for book in progress.unrated %}
+    <li>{{ book.title }} — <a href="{{ url_for('index') }}#returned-books">Rate now</a></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+{# 4 ─ Currently issued ---------------------------------------------------- #}
+<section class="rec-section" id="returned-books">
+  <h2>Currently issued books</h2>
+  {% if issued %}
+  <table>
+    <tr><th>Book</th><th>Issued</th><th>Due Date</th><th>Fine</th></tr>
+    {% for item in issued %}
+    <tr>
+      <td>{{ item.title }}</td>
+      <td>{{ item.issue_date }}</td>
+      <td>{{ item.due_date }}</td>
+      <td>{{ item.fine }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No books currently issued.</p>
+  {% endif %}
+</section>
+
+{# 5 ─ Returned books + star widget --------------------------------------- #}
+<section class="rec-section">
+  <h2>Returned books</h2>
+  {% if returned %}
+  <table>
+    <tr><th>Book</th><th>Returned</th><th>Fine</th><th>Your rating</th></tr>
+    {% for item in returned %}
+    <tr>
+      <td>{{ item.title }}</td>
+      <td>{{ item.return_date }}</td>
+      <td>{{ item.fine }}</td>
+      <td>
+        {% set stats = rating_stats.get(item.book_id) %}
+        {% if stats %}
+          <div class="rating-summary">{{ stats.avg_rating }} ({{ stats.count }})</div>
+        {% else %}
+          <div class="rating-summary">Not rated yet</div>
+        {% endif %}
+        {{ star_widget(item.book_id, my_ratings.get(item.book_id), 'dash-' ~ item.issue_id, url_for('index') ~ '#returned-books') }}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No returned books recorded.</p>
+  {% endif %}
+</section>
+
+{# 6 ─ Return action ------------------------------------------------------- #}
+<section class="rec-section">
+  <h2>Return a book</h2>
+  {% if issued %}
+  <table>
+    <tr><th>Book</th><th>Return</th></tr>
+    {% for item in issued %}
+    <tr>
+      <td>{{ item.title }}</td>
+      <td>
+        <form class="inline" method="post" action="{{ url_for('issue_return', issue_id=item.issue_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn small danger">Return</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No books currently issued.</p>
+  {% endif %}
+</section>
+
+<p><form class="inline" method="post" action="{{ url_for('user_logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn ghost small">Logout</button>
+</form></p>
+
+{% endblock %}

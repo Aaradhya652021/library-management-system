@@ -1,0 +1,24 @@
+{% macro star_widget(book_id, my_rating=None, uid='book', next_url='') %}
+<form class="rating-form" method="post" action="{{ url_for('recs.feedback') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="book_id" value="{{ book_id }}">
+  {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
+  <div class="stars" role="radiogroup" aria-label="Rate this book from 1 to 5 stars">
+    {% for value in [5, 4, 3, 2, 1] %}
+    <input type="radio"
+           id="star-{{ uid }}-{{ value }}"
+           name="rating"
+           value="{{ value }}"
+           {% if my_rating == value %}checked{% endif %}
+           required>
+    <label for="star-{{ uid }}-{{ value }}" title="{{ value }} star{% if value != 1 %}s{% endif %}">
+      <span aria-hidden="true">★</span><span class="sr-only">{{ value }} out of 5 stars</span>
+    </label>
+    {% endfor %}
+  </div>
+  {% if my_rating %}<span class="rating-current">Your rating: {{ my_rating }}/5</span>{% endif %}
+  <input class="rating-comment" type="text" name="comment" maxlength="500"
+         placeholder="Optional comment (max 500 characters)">
+  <button class="btn small" type="submit">{{ 'Update' if my_rating else 'Save' }} rating</button>
+</form>
+{% endmacro %}

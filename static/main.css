@@ -1,0 +1,685 @@
+/* ==========================================================================
+   THE LIBRARY · main.css
+   All styling for the site lives in this folder:  /static/css/
+   --------------------------------------------------------------------------
+   Contents
+     1. Colour palette (CSS variables)
+     2. Typography (CSS variables)
+     3. Base & page background
+     4. Header & navigation
+     5. Layout & footer
+     6. Headings, subtitles & drop caps
+     7. Cards
+     8. Tables
+     9. Forms
+    10. Buttons
+    11. Tags (blackletter labels) & flash messages
+    12. Statistics
+    13. Utilities & responsive
+   ========================================================================== */
+
+/* 1 · Colour palette ------------------------------------------------------ */
+:root {
+  --espresso-dark:   #2b1810;  /* deep espresso — header, table heads      */
+  --coffee-brown:    #4a2c1a;  /* coffee — strong text, buttons            */
+  --mocha:           #6f4e37;  /* mocha — secondary text, labels           */
+  --latte-caramel:   #a67b5b;  /* latte — borders, muted accents           */
+  --cream-parchment: #f3e5c8;  /* cream — page background, light text      */
+  --aged-paper:      #e6d3a8;  /* aged paper — cards, panels               */
+  --antique-gold:    #b8893b;  /* gold — ornaments, hovers, drop caps      */
+  --faded-ink:       #1c120c;  /* ink — primary body text                  */
+
+  /* Shades mixed from the palette above */
+  --gold-deep:  #8a651f;
+  --gold-soft:  rgba(184, 137, 59, .4);
+  --gold-faint: rgba(184, 137, 59, .14);
+  --ink-soft:   rgba(28, 18, 12, .64);
+  --oxblood:    #6e2a1a;      /* danger — drawn from the espresso depths  */
+  --shadow:     rgba(43, 24, 16, .18);
+}
+
+/* 2 · Typography ---------------------------------------------------------- */
+:root {
+  --font-script:  'Pinyon Script', cursive;     /* logo & hero — alt: 'Great Vibes'   */
+  --font-heading: 'IM Fell English SC', serif;  /* section headings                   */
+  --font-body:    'Cormorant Garamond', serif;  /* body text — alt: 'IM Fell English' */
+  --font-fell:    'IM Fell English', serif;     /* figures, dates, table text         */
+  --font-label:   'UnifrakturCook', cursive;    /* blackletter accent labels          */
+}
+
+/* 3 · Base & page background ---------------------------------------------- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 1.09rem;
+  line-height: 1.65;
+  color: var(--faded-ink);
+  background-color: var(--cream-parchment);
+  background-image:
+    radial-gradient(ellipse at 15% 8%,  rgba(230, 211, 168, .55) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 92%, rgba(166, 123, 91, .16)  0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, transparent 62%, rgba(43, 24, 16, .10) 100%);
+  background-attachment: fixed;
+}
+
+::selection { background: var(--antique-gold); color: var(--cream-parchment); }
+
+:focus-visible { outline: 2px solid var(--antique-gold); outline-offset: 2px; }
+
+a { color: var(--coffee-brown); }
+
+code {
+  font-size: .92em;
+  background: var(--gold-faint);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+/* 4 · Header & navigation -------------------------------------------------- */
+header {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 14px 28px;
+  background: linear-gradient(180deg, var(--espresso-dark) 0%, var(--coffee-brown) 100%);
+  border-bottom: 3px double var(--antique-gold);
+  box-shadow: 0 2px 14px var(--shadow);
+}
+
+header .brand {
+  font-family: var(--font-script);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--antique-gold);
+  margin-right: 14px;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .4);
+}
+
+header a {
+  color: var(--aged-paper);
+  text-decoration: none;
+  font-variant: small-caps;
+  letter-spacing: .14em;
+  padding: 2px 1px;
+  border-bottom: 1px solid transparent;
+  transition: color .2s ease, border-color .2s ease;
+}
+
+header a:hover {
+  color: var(--antique-gold);
+  border-color: var(--antique-gold);
+}
+
+header form { margin-left: auto; }
+
+/* The ghost logout button sits on dark wood — keep it legible */
+header .btn.ghost {
+  color: var(--aged-paper);
+  border-color: var(--latte-caramel);
+}
+header .btn.ghost:hover {
+  color: var(--antique-gold);
+  border-color: var(--antique-gold);
+  background: var(--gold-faint);
+}
+
+/* 5 · Layout & footer ------------------------------------------------------ */
+main {
+  max-width: 1060px;
+  margin: 34px auto 60px;
+  padding: 0 20px;
+}
+
+footer {
+  text-align: center;
+  padding: 26px 0 36px;
+  color: var(--mocha);
+  font-family: var(--font-script);
+  font-size: 1.2rem;
+  opacity: .85;
+}
+
+/* 6 · Headings, subtitles & drop caps -------------------------------------- */
+h1 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 2.35rem;
+  letter-spacing: .045em;
+  color: var(--coffee-brown);
+  margin: 0 0 2px;
+}
+
+/* gold flourish under every page title */
+h1::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin: 10px 0 8px;
+  background: linear-gradient(90deg, var(--antique-gold) 0%, var(--gold-soft) 45%, transparent 100%);
+}
+
+/* hero-sized script title (used where a page deserves extra ceremony) */
+h1.script-title {
+  font-family: var(--font-script);
+  font-size: 2.9rem;
+  letter-spacing: .02em;
+}
+
+h2 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.5rem;
+  letter-spacing: .03em;
+  color: var(--coffee-brown);
+  margin: 28px 0 12px;
+}
+
+/* small caps, wide letter-spacing, italic flourish */
+.subtitle {
+  font-style: italic;
+  font-variant: small-caps;
+  letter-spacing: .22em;
+  color: var(--mocha);
+  font-size: 1.02rem;
+  margin: 2px 0 22px;
+}
+.subtitle::before { content: "❧ "; color: var(--antique-gold); }
+.subtitle::after  { content: " ❧"; color: var(--antique-gold); }
+
+/* large decorative drop caps on the first paragraph of a section */
+p.dropcap::first-letter,
+.prose > p:first-of-type::first-letter {
+  font-family: var(--font-script);
+  font-size: 3.3em;
+  line-height: .78;
+  float: left;
+  padding: .07em .14em 0 0;
+  color: var(--antique-gold);
+}
+
+.card h2 {
+  font-size: 1.22rem;
+  margin-top: 0;
+}
+
+/* 7 · Cards ----------------------------------------------------------------- */
+.card {
+  background: linear-gradient(180deg, rgba(243, 229, 200, .6), rgba(230, 211, 168, .35)),
+              var(--aged-paper);
+  border: 1px solid var(--gold-soft);
+  outline: 1px solid rgba(184, 137, 59, .14);
+  outline-offset: 3px;
+  border-radius: 3px;
+  padding: 20px 22px;
+  margin-bottom: 26px;
+  box-shadow: 0 3px 12px var(--shadow), inset 0 0 46px rgba(184, 137, 59, .1);
+}
+
+.card--narrow { max-width: 460px; }
+
+/* 8 · Tables ----------------------------------------------------------------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--cream-parchment);
+  border: 1px solid var(--gold-soft);
+  margin-bottom: 24px;
+  box-shadow: 0 3px 12px var(--shadow);
+}
+
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(184, 137, 59, .28);
+}
+
+th {
+  background: var(--espresso-dark);
+  color: var(--aged-paper);
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: .92rem;
+  letter-spacing: .09em;
+}
+
+td {
+  font-family: var(--font-fell);
+  font-size: 1.02rem;
+}
+
+tr:nth-child(even) td { background: rgba(230, 211, 168, .45); }
+tr:hover td           { background: var(--gold-faint); }
+
+/* 9 · Forms ------------------------------------------------------------------- */
+label {
+  display: block;
+  margin: 12px 0 4px;
+  font-variant: small-caps;
+  letter-spacing: .1em;
+  color: var(--mocha);
+  font-size: .98rem;
+}
+
+input, select {
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  color: var(--faded-ink);
+  background: var(--cream-parchment);
+  padding: 9px 10px;
+  width: 100%;
+  max-width: 360px;
+  border: 1px solid var(--latte-caramel);
+  border-radius: 2px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--antique-gold);
+  box-shadow: 0 0 0 3px var(--gold-faint);
+}
+
+.form-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+#book_id { min-width: 240px; }
+#user_id { min-width: 200px; }
+
+/* 10 · Buttons ------------------------------------------------------------------ */
+button, .btn {
+  font-family: var(--font-heading);
+  font-size: .95rem;
+  letter-spacing: .1em;
+  background: linear-gradient(180deg, var(--coffee-brown), var(--espresso-dark));
+  color: var(--cream-parchment);
+  border: 1px solid var(--mocha);
+  border-radius: 2px;
+  padding: 8px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+
+button:hover, .btn:hover {
+  background: linear-gradient(180deg, var(--antique-gold), var(--gold-deep));
+  border-color: var(--antique-gold);
+  color: var(--faded-ink);
+}
+
+.btn.small { padding: 3px 10px; font-size: .82rem; }
+
+.btn.ghost {
+  background: transparent;
+  color: var(--coffee-brown);
+  border: 1px solid var(--latte-caramel);
+}
+.btn.ghost:hover {
+  background: var(--gold-faint);
+  color: var(--gold-deep);
+  border-color: var(--antique-gold);
+}
+
+.btn.danger {
+  background: linear-gradient(180deg, #83301c, var(--oxblood));
+  border-color: var(--oxblood);
+}
+.btn.danger:hover {
+  background: var(--oxblood);
+  color: var(--cream-parchment);
+}
+
+/* 11 · Tags (blackletter labels) & flash messages --------------------------------- */
+.tag {
+  font-family: var(--font-label);
+  font-size: .78rem;
+  letter-spacing: .04em;
+  padding: 3px 10px 4px;
+  border-radius: 2px;
+  border: 1px solid var(--gold-soft);
+  background: var(--aged-paper);
+  color: var(--mocha);
+  white-space: nowrap;
+}
+
+.tag.ok   { background: var(--gold-faint); color: var(--gold-deep); }
+.tag.out  { background: var(--aged-paper); color: var(--mocha); }
+.tag.late { background: var(--oxblood); color: var(--cream-parchment); border-color: var(--oxblood); }
+
+.flash {
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border-radius: 2px;
+  border-left: 3px solid;
+  font-style: italic;
+}
+
+.flash.ok {
+  background: var(--gold-faint);
+  border-color: var(--antique-gold);
+  color: var(--coffee-brown);
+}
+
+.flash.error {
+  background: rgba(110, 42, 26, .12);
+  border-color: var(--oxblood);
+  color: var(--oxblood);
+}
+
+/* 12 · Statistics ------------------------------------------------------------------ */
+.stats {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 4px 0 26px;
+}
+
+.stat {
+  background: var(--aged-paper);
+  border: 1px solid var(--gold-soft);
+  border-top: 3px double var(--antique-gold);
+  border-radius: 3px;
+  padding: 14px 20px 12px;
+  min-width: 132px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.stat b {
+  display: block;
+  font-family: var(--font-fell);
+  font-weight: 400;
+  font-size: 1.9rem;
+  line-height: 1.15;
+  color: var(--coffee-brown);
+}
+
+.stat span {
+  font-variant: small-caps;
+  letter-spacing: .12em;
+  color: var(--mocha);
+  font-size: .88rem;
+}
+
+/* 13 · Utilities & responsive -------------------------------------------------------- */
+.muted {
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: .98rem;
+}
+
+form.inline { display: inline; }
+
+@media (max-width: 720px) {
+  header { flex-wrap: wrap; gap: 10px 16px; padding: 12px 16px; }
+  header form { margin-left: 0; }
+  h1 { font-size: 1.9rem; }
+  h1.script-title { font-size: 2.3rem; }
+  main { margin-top: 24px; }
+}
+
+/* 14 · Auth pages -------------------------------------------------------------------- */
+.auth-card {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.auth-card .card {
+  max-width: 100%;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 14px;
+  font-size: .95rem;
+  color: var(--mocha);
+}
+
+.auth-switch a {
+  color: var(--coffee-brown);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.phone-hint {
+  margin-top: 6px;
+  font-size: .85rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* 15 · Recommendations -------------------------------------------------------------- */
+.recommend-table td, .recommend-table th {
+  padding: 8px 10px;
+}
+
+.recommend-table tr:hover td {
+  background: var(--gold-faint);
+}
+
+.similarity-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-size: .88rem;
+  font-weight: 600;
+  background: var(--gold-faint);
+  color: var(--gold-deep);
+}
+
+/* 16 · User Segments ---------------------------------------------------------------- */
+.segment-card {
+  margin-bottom: 26px;
+}
+
+.segment-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.segment-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: var(--antique-gold);
+  color: var(--faded-ink);
+  font-weight: 700;
+  font-size: .9rem;
+  font-family: var(--font-heading);
+}
+
+/* 17 · User Dashboard - Horizontal Layouts ------------------------------------------ */
+.profile-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin-top: 12px;
+}
+
+.profile-item {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--cream-parchment);
+  border: 1px solid var(--gold-soft);
+  border-radius: 4px;
+}
+
+.profile-emoji {
+  font-size: 1.6rem;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-label {
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--mocha);
+  margin-bottom: 2px;
+}
+
+.profile-value {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--faded-ink);
+  word-break: break-word;
+}
+
+/* Book grid - horizontal cards */
+.book-grid {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.book-card {
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--cream-parchment);
+  border: 1px solid var(--gold-soft);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.book-card.book-reading {
+  border-left: 4px solid var(--antique-gold);
+}
+
+.book-card.book-returned {
+  border-left: 4px solid var(--antique-gold);
+  opacity: 0.85;
+}
+
+.book-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.book-emoji {
+  font-size: 1.5rem;
+}
+
+.book-status {
+  margin-left: auto;
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+.status-reading {
+  background: var(--gold-faint);
+  color: var(--gold-deep);
+}
+
+.status-returned {
+  background: rgba(110, 42, 26, .12);
+  color: var(--oxblood);
+}
+
+.book-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--coffee-brown);
+  margin-bottom: 4px;
+}
+
+.book-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .88rem;
+  color: var(--ink-soft);
+}
+
+.meta-emoji {
+  font-size: 1rem;
+}
+
+.book-fine {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--gold-soft);
+}
+
+.fine-badge {
+  display: inline-block;
+  font-size: .88rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 3px;
+}
+
+.fine-badge.ok {
+  background: var(--gold-faint);
+  color: var(--gold-deep);
+}
+
+.return-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink-soft);
+}
+
+.empty-emoji {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  margin: 6px 0;
+}
+
+.small {
+  font-size: .85rem;
+}
+
+@media (max-width: 720px) {
+  .profile-grid {
+    flex-direction: column;
+  }
+  .book-grid {
+    flex-direction: column;
+  }
+  .book-card {
+    max-width: 100%;
+  }
+}

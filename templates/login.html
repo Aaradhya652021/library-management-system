@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<h1>Admin login</h1>
+<div class="card" style="max-width: 380px;">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="username">Username</label>
+    <input id="username" name="username" required autofocus>
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required>
+    <p><button type="submit">Sign in</button></p>
+  </form>
+  <p class="muted">Trouble signing in? Contact the library administrator.</p>
+</div>
+{% endblock %}
